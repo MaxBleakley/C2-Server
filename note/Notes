@@ -1,0 +1,54 @@
+Psuedocode (Claude Generated)
+
+<!-- System has 3 loops -->
+1. Agent Beacon - Runs forever on the target
+2. Server request - Reacts to agent and operator
+3. Operator loop - Human tasks, reads results
+
+
+<!-- Agent Beacon Loop -->
+on start:
+    id   = load_or_generate_identity()
+    meta = collect_minimal_metadata()     # hostname, user, os — for the operator to identify the session
+    register(id, meta)                     # one-time announce
+
+loop forever:
+    sleep(interval + random_jitter())      # never a fixed interval
+    try:
+        tasks = request_tasks(id)          # pull
+        for task in tasks:
+            result = execute(task)         # dispatch on task.type
+            send_result(id, task.id, result)
+    except NetworkError:
+        backoff()                          # server down ≠ agent dies; retry later
+        continue
+
+Agent always initiates. Connection is outbound
+Fixed timing is giveaway. Use random_jitter
+execute is a dispatch table. Map task.type -> handler
+Handler is "run shell command and capture output"
+
+<!-- Server request handlers -->
+register endpoint -> validate and create agent record, returns id
+get_task(id) -> Lookup agent, last seen when -> pop qued tasks for the ID, mark them dispatched then returns
+operater_enqueue(id,cmd) Validate, create task for agent
+
+Two pieces of logic do most of the work:
+Check-in updates liveness. Every get_tasks call refreshes last_seen. 
+That single write is how you later tell live agents from dead ones — no separate heartbeat needed.
+Tasks move through states, they aren't deleted. 
+Popping a task means flipping queued → dispatched, not removing it. You keep the record so you can match the result back and show history.
+
+queued ──(agent pulls)──► dispatched ──(result arrives)──► complete
+   │                          │
+   │                          └──(no result in N intervals)──► timed_out
+   └──(operator cancels)──► cancelled
+
+
+Agent session
+gap = now - last_seen
+if gap < interval * 3:        active
+elif gap < interval * 10:     stale
+else:                         dead
+
+
