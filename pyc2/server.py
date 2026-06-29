@@ -24,6 +24,36 @@ s.bind((host, port)) # This binds the socket to host and port
 s.listen(5) # Sets socket to listen. 5 connections can wait in queue before being accepted
 print(Fore.GREEN + "[+] Listening on " + host + ":" + str(port) + Style.RESET_ALL) # Prints a line saying port and ip address the server is listening on
 
+## init_main_sock() is the main function
+
+def init_main_sock():
+    while True:
+        conn, addr = s.accept() # Accepts a connection from a client 
+        print(Fore.GREEN + f'\n[+] New Connection From: {addr[0]}:{addr[1]}' + Fore.WHITE) # Prints the IP and port 
+
+        global counter 
+        global automigrate
+        counter += 1 # Increments the counter by 1
+        
+        # Gathers client info
+        clientinfo = conn.recv(1024)
+        clientinfo = clientinfo.decode('utf-8')
+        clientinfo = clientinfo.split("\n")
+
+        # Get first item from client info (e.g. UserInfo = "John Doe's PC")
+        UserInfo=clientinfo[0]
+        # Print recieved client info (this is just for testing purposes, can be removed later)
+        print(clientinfo)
+        # Stores sumary in clientlist and adds a new item to clientlist. It stores counter, conn and userInfo
+        clientlist.append([counter, conn, UserInfo])
+        clientdata.append([clientinfo])
+
+        handler_thread = threading.Thread(target=probe)
+        handler_thread.daemon = True
+        handler_thread.start()
+
+
+
 
 # This block of code starts the threads to keep the main programme alive 
 
