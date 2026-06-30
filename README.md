@@ -24,22 +24,25 @@ Python C2 provides the core components of a modern C2 framework: a central serve
 
 ## Architecture
 
-```
-+-----------+        HTTPS         +-------------+        IPC/API        +------------+
-|  Agent    | <------------------> |   Server    | <-------------------> |  Operator  |
-| (target)  |   check-in/tasking   | (listeners, |   tasking/results     |    CLI     |
-+-----------+                      |  task queue,|                       +------------+
-                                   |  data store)|
-                                   +-------------+
-```
+The project follows a simple client-server architecture. The server listens for incoming TCP connections, while the agent/client connects back to the server and sends basic system or session information.
 
-**Server** — Accepts agent connections via one or more listeners, queues operator-issued tasks, stores results.
++-------------------+              TCP              +-------------------+
+|                   |  connect() -----------------> |                   |
+|  netcatClient.py  |                               |     server.py     |
+|                   |  send/recv <----------------> |                   |
++-------------------+                               +-------------------+
 
-**Listeners** — Transport adapters (HTTP/S to start). Decoupled from core logic so new transports can be added without touching the server.
++-------------------+              TCP              +-------------------+
+|                   |  connect() -----------------> |                   |
+|     agent.py      |                               |     server.py     |
+|                   |  send/recv <----------------> |                   |
++-------------------+                               +-------------------+
 
-**Agent** — Minimal client that checks in, retrieves tasks, returns results. Kept deliberately simple.
-
-**Operator interface** — CLI for managing sessions and issuing tasks.
++-------------------+
+|     crypto.py     |
+| Shared helper     |
+| functions         |
++-------------------+
 
 ---
 
@@ -63,12 +66,30 @@ Python C2 provides the core components of a modern C2 framework: a central serve
 
 ## Project structure
 
+C2-SERVER/
+└── pyc2/
+    ├── agent.py
+    ├── crypto.py
+    ├── netcatClient.py
+    └── server.py
+
 ---
+
+## File Overview
+
+| File | Purpose |
+|---|---|
+| `agent.py` | Handles the client/agent functionality and communication with the server. |
+| `crypto.py` | Contains encryption, decryption, or hashing-related helper functions. |
+| `netcatClient.py` | Provides a simple client used for testing socket connections. |
+| `server.py` | Starts the server socket, listens for incoming clients, and manages connections. |
 
 ## Roadmap
 
-- [ ] 
-- [ ] 
+- [ ] Deployment Of Agent Logic
+- [X] Development of NetCat Client
+- [X] Development of Server 
+- [ ] Encryption of Traffic
 
 ---
 
@@ -78,4 +99,26 @@ This is a collaborative project between Max Bleakley & Ben Robinson.
 
 ---
 
-## Legal & Ethics
+## Legal and Ethical Use
+
+This project is intended strictly for educational and research purposes within an authorised cyber security lab environment.
+
+The code in this repository must only be used on systems, networks, and devices where explicit permission has been granted. Using this software against third-party systems without authorisation may be illegal and unethical.
+
+This project must not be used for:
+
+- unauthorised access to systems or networks
+- persistence, evasion, credential theft, or data exfiltration
+- deploying malware or backdoors
+- attacking public IP addresses, organisations, or individuals
+- bypassing security controls without written permission
+
+Acceptable use includes:
+
+- controlled lab testing
+- university coursework
+- defensive security research
+- learning about TCP sockets, client-server communication, and secure coding
+- testing inside isolated virtual machines or private networks
+
+The author/s does not condone malicious use of this software. Users are responsible for ensuring that their actions comply with all applicable laws, university policies, and ethical guidelines.
