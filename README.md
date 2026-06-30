@@ -104,7 +104,7 @@ This is a collaborative project between Max Bleakley & Ben Robinson.
 
 ---
 
-## Legal and Ethical Use
+## Legal and Ethics
 
 This project is intended strictly for educational and research purposes within an authorised cyber security lab environment.
 
