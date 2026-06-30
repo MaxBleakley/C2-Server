@@ -82,12 +82,16 @@ C2-SERVER/
 
 ## File Overview
 
-| File | Purpose |
-|---|---|
-| `agent.py` | Handles the client/agent functionality and communication with the server. |
-| `crypto.py` | Contains encryption, decryption, or hashing-related helper functions. |
-| `netcatClient.py` | Provides a simple client used for testing socket connections. |
-| `server.py` | Starts the server socket, listens for incoming clients, and manages connections. |
+## Project Structure
+
+```text
+C2-SERVER/
+└── pyc2/
+    ├── agent.py
+    ├── crypto.py
+    ├── netcatClient.py
+    └── server.py
+```
 
 ## Roadmap
 
