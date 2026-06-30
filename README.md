@@ -67,21 +67,6 @@ The project follows a simple client-server architecture. The server listens for 
 ## Usage
 
 
----
-
-## Project structure
-
-C2-SERVER/
-└── pyc2/
-    ├── agent.py
-    ├── crypto.py
-    ├── netcatClient.py
-    └── server.py
-
----
-
-## File Overview
-
 ## Project Structure
 
 ```text
