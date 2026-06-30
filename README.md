@@ -26,24 +26,29 @@ Python C2 provides the core components of a modern C2 framework: a central serve
 
 The project follows a simple client-server architecture. The server listens for incoming TCP connections, while the agent/client connects back to the server and sends basic system or session information.
 
-+-------------------+              TCP              +-------------------+
-|                   |  connect() -----------------> |                   |
-|  netcatClient.py  |                               |     server.py     |
-|                   |  send/recv <----------------> |                   |
-+-------------------+                               +-------------------+
+## Architecture
 
-+-------------------+              TCP              +-------------------+
-|                   |  connect() -----------------> |                   |
-|     agent.py      |                               |     server.py     |
-|                   |  send/recv <----------------> |                   |
-+-------------------+                               +-------------------+
+The project follows a simple client-server architecture. The server listens for incoming TCP connections, while the agent/client connects back to the server and sends basic system or session information.
+
+```text
++-------------------+        TCP        +-------------------+
+|                   |  connect() -----> |                   |
+|  netcatClient.py  |                   |     server.py     |
+|                   |  send/recv <----> |                   |
++-------------------+                   +-------------------+
+
++-------------------+        TCP        +-------------------+
+|                   |  connect() -----> |                   |
+|     agent.py      |                   |     server.py     |
+|                   |  send/recv <----> |                   |
++-------------------+                   +-------------------+
 
 +-------------------+
 |     crypto.py     |
 | Shared helper     |
 | functions         |
 +-------------------+
-
+```
 ---
 
 ## Tech stack
